@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+pip-wheel-metadata/
+
+# Node / frontend
+node_modules/
+dist/
+build/
+.vite/
+
+# Environment
+.env
+*.local.env
+
+# Logs
+*.log
+logs/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Runtime data
+*.jpg
+*.jpeg
+*.png
+*.mp4
+*.avi
+captures/
+attack_frames/

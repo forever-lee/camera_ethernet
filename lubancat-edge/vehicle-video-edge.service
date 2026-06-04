@@ -1,0 +1,14 @@
+[Unit]
+Description=Vehicle Ethernet Video Edge Sender
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/camera_ethernet/lubancat-edge
+ExecStart=/usr/bin/python3 /opt/camera_ethernet/lubancat-edge/edge_sender.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
