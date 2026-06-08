@@ -1,0 +1,11 @@
+[Unit]
+Description = auto_4G daemon
+
+[Service]
+ExecStart = /home/cat/Code/auto_4G.sh
+Restart = on-failure
+RestartSec = 3
+Type = simple
+
+[Install]
+WantedBy = multi-user.target

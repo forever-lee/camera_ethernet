@@ -1,0 +1,13 @@
+[Unit]
+Description=Set 4G wwan0 as default route at boot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /home/cat/Code/4g_wwan0.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
