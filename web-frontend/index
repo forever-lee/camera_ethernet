@@ -1,0 +1,1237 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>车载以太网视频安全监控平台</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Consolas, "Microsoft YaHei", Arial, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(37, 99, 235, 0.28), transparent 34%),
+                radial-gradient(circle at top right, rgba(220, 38, 38, 0.18), transparent 30%),
+                #050816;
+            color: #e5e7eb;
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 18px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 16px;
+            padding: 18px;
+            background: rgba(15, 23, 42, 0.82);
+            border: 1px solid rgba(59, 130, 246, 0.32);
+            border-radius: 18px;
+            box-shadow: 0 0 30px rgba(37, 99, 235, 0.18);
+        }
+
+        .title-block h1 {
+            margin: 0;
+            font-size: 26px;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            margin-top: 8px;
+            color: #93c5fd;
+            font-size: 14px;
+        }
+
+        .system-badge {
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(34, 197, 94, 0.65);
+            color: #bbf7d0;
+            background: rgba(20, 83, 45, 0.25);
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .system-badge.warning {
+            border-color: rgba(250, 204, 21, 0.75);
+            color: #fef08a;
+            background: rgba(113, 63, 18, 0.35);
+        }
+
+        .system-badge.danger {
+            border-color: rgba(248, 113, 113, 0.9);
+            color: #fecaca;
+            background: rgba(127, 29, 29, 0.55);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1.8fr 1fr;
+            gap: 16px;
+        }
+
+        .panel {
+            background: rgba(15, 23, 42, 0.82);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: 18px;
+            padding: 16px;
+            box-shadow: 0 0 24px rgba(0, 0, 0, 0.28);
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            color: #bfdbfe;
+            font-size: 15px;
+            letter-spacing: 1px;
+        }
+
+        .panel-title span {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: none;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 14px;
+            cursor: pointer;
+            color: white;
+            font-weight: 600;
+            transition: 0.16s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            opacity: 0.92;
+        }
+
+        .btn-start { background: #16a34a; }
+        .btn-stop { background: #dc2626; }
+        .btn-status { background: #2563eb; }
+        .btn-refresh { background: #6b7280; }
+        .btn-car { background: #9333ea; }
+        .btn-attack { background: #b91c1c; }
+        .btn-clear { background: #334155; }
+
+        .video-wrapper {
+            position: relative;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            min-height: 520px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(59, 130, 246, 0.35);
+        }
+
+        #video {
+            width: 100%;
+            max-height: 760px;
+            object-fit: contain;
+            display: none;
+            z-index: 1;
+        }
+
+        .placeholder {
+            color: #64748b;
+            font-size: 20px;
+            z-index: 2;
+            text-align: center;
+            line-height: 1.8;
+        }
+
+        .monitor-badge {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            z-index: 6;
+            display: none;
+            background: rgba(15, 23, 42, 0.78);
+            border: 1px solid rgba(34, 197, 94, 0.8);
+            color: #bbf7d0;
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+
+        .monitor-badge.show {
+            display: block;
+        }
+
+        .edge-badge {
+            position: absolute;
+            top: 52px;
+            left: 14px;
+            z-index: 6;
+            display: none;
+            background: rgba(15, 23, 42, 0.78);
+            border: 1px solid rgba(96, 165, 250, 0.8);
+            color: #bfdbfe;
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        .edge-badge.show {
+            display: block;
+        }
+
+        .attack-alert {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            z-index: 8;
+            display: none;
+            background: rgba(127, 29, 29, 0.9);
+            border: 1px solid rgba(248, 113, 113, 0.9);
+            color: #fecaca;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 13px;
+            letter-spacing: 1px;
+            animation: blink 0.7s infinite alternate;
+        }
+
+        .attack-alert.show {
+            display: block;
+        }
+
+        @keyframes blink {
+            from { opacity: 0.52; }
+            to { opacity: 1; }
+        }
+
+        /* ================= 虚拟自车 HUD ================= */
+
+        .vehicle-overlay {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 58%;
+            pointer-events: none;
+            z-index: 5;
+            display: none;
+            overflow: hidden;
+        }
+
+        .vehicle-overlay.show {
+            display: block;
+        }
+
+        .road-guide {
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            width: 92%;
+            height: 100%;
+            transform: translateX(-50%);
+            background:
+                radial-gradient(
+                    ellipse at bottom,
+                    rgba(15, 23, 42, 0.52) 0%,
+                    rgba(15, 23, 42, 0.28) 38%,
+                    rgba(15, 23, 42, 0.03) 78%,
+                    rgba(15, 23, 42, 0) 100%
+                );
+            clip-path: polygon(8% 100%, 92% 100%, 58% 0%, 42% 0%);
+        }
+
+        .lane-line {
+            position: absolute;
+            bottom: -8%;
+            width: 3px;
+            height: 120%;
+            background: linear-gradient(
+                to top,
+                rgba(34, 197, 94, 0.92),
+                rgba(34, 197, 94, 0.38),
+                rgba(34, 197, 94, 0)
+            );
+            box-shadow:
+                0 0 10px rgba(34, 197, 94, 0.95),
+                0 0 24px rgba(34, 197, 94, 0.55);
+            opacity: 0.95;
+        }
+
+        .lane-left {
+            left: 28%;
+            transform: rotate(15deg);
+            transform-origin: bottom center;
+        }
+
+        .lane-right {
+            right: 28%;
+            transform: rotate(-15deg);
+            transform-origin: bottom center;
+        }
+
+        .center-guide {
+            position: absolute;
+            left: 50%;
+            bottom: 26%;
+            width: 2px;
+            height: 40%;
+            transform: translateX(-50%);
+            background: repeating-linear-gradient(
+                to top,
+                rgba(96, 165, 250, 0.85) 0,
+                rgba(96, 165, 250, 0.85) 18px,
+                transparent 18px,
+                transparent 34px
+            );
+            opacity: 0.75;
+            filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.8));
+        }
+
+        .ego-vehicle {
+            position: absolute;
+            left: 50%;
+            bottom: -56px;
+            width: 68%;
+            max-width: 820px;
+            min-width: 420px;
+            height: 280px;
+            transform: translateX(-50%);
+            filter:
+                drop-shadow(0 -8px 24px rgba(15, 23, 42, 0.85))
+                drop-shadow(0 0 18px rgba(59, 130, 246, 0.45));
+        }
+
+        .hood {
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            width: 100%;
+            height: 235px;
+            transform: translateX(-50%);
+            border-radius: 46% 46% 0 0 / 36% 36% 0 0;
+            background:
+                linear-gradient(
+                    105deg,
+                    rgba(15, 23, 42, 0.95) 0%,
+                    rgba(30, 64, 175, 0.96) 16%,
+                    rgba(37, 99, 235, 0.96) 38%,
+                    rgba(96, 165, 250, 0.92) 50%,
+                    rgba(37, 99, 235, 0.96) 62%,
+                    rgba(30, 64, 175, 0.96) 84%,
+                    rgba(15, 23, 42, 0.95) 100%
+                );
+            border-top: 2px solid rgba(219, 234, 254, 0.85);
+            box-shadow:
+                inset 0 24px 38px rgba(255, 255, 255, 0.16),
+                inset 0 -26px 36px rgba(2, 6, 23, 0.55),
+                0 -4px 20px rgba(96, 165, 250, 0.35);
+            opacity: 0.94;
+        }
+
+        .hood::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 16px;
+            width: 66%;
+            height: 90px;
+            transform: translateX(-50%);
+            border-radius: 50% 50% 30% 30%;
+            background:
+                linear-gradient(
+                    to bottom,
+                    rgba(255, 255, 255, 0.26),
+                    rgba(147, 197, 253, 0.12),
+                    rgba(15, 23, 42, 0)
+                );
+            opacity: 0.85;
+        }
+
+        .windshield {
+            position: absolute;
+            left: 50%;
+            top: 8px;
+            width: 48%;
+            height: 66px;
+            transform: translateX(-50%);
+            border-radius: 16px 16px 45px 45px;
+            background:
+                linear-gradient(
+                    to bottom,
+                    rgba(3, 7, 18, 0.78),
+                    rgba(15, 23, 42, 0.44)
+                );
+            border: 1px solid rgba(191, 219, 254, 0.58);
+        }
+
+        .head-light {
+            position: absolute;
+            bottom: 72px;
+            width: 120px;
+            height: 30px;
+            border-radius: 60% 40% 60% 40%;
+            background:
+                linear-gradient(
+                    to bottom,
+                    rgba(254, 240, 138, 0.98),
+                    rgba(250, 204, 21, 0.56),
+                    rgba(251, 191, 36, 0.12)
+                );
+            box-shadow:
+                0 0 16px rgba(250, 204, 21, 0.85),
+                0 0 42px rgba(250, 204, 21, 0.35);
+            opacity: 0.82;
+        }
+
+        .head-light.left {
+            left: 9%;
+            transform: skewX(-14deg);
+        }
+
+        .head-light.right {
+            right: 9%;
+            transform: skewX(14deg);
+        }
+
+        .bumper {
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            width: 92%;
+            height: 56px;
+            transform: translateX(-50%);
+            border-radius: 40px 40px 0 0;
+            background:
+                linear-gradient(
+                    to bottom,
+                    rgba(15, 23, 42, 0.92),
+                    rgba(2, 6, 23, 0.98)
+                );
+            border-top: 1px solid rgba(148, 163, 184, 0.5);
+        }
+
+        .grille {
+            position: absolute;
+            left: 50%;
+            bottom: 24px;
+            width: 38%;
+            height: 18px;
+            transform: translateX(-50%);
+            border-radius: 999px;
+            background:
+                repeating-linear-gradient(
+                    to right,
+                    rgba(15, 23, 42, 0.98) 0,
+                    rgba(15, 23, 42, 0.98) 12px,
+                    rgba(148, 163, 184, 0.7) 12px,
+                    rgba(148, 163, 184, 0.7) 15px
+                );
+            opacity: 0.85;
+        }
+
+        .car-shadow {
+            position: absolute;
+            left: 50%;
+            bottom: -12px;
+            width: 84%;
+            height: 46px;
+            transform: translateX(-50%);
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.68);
+            filter: blur(14px);
+        }
+
+        .hud-label {
+            position: absolute;
+            left: 50%;
+            bottom: 14px;
+            transform: translateX(-50%);
+            font-size: 13px;
+            color: #bfdbfe;
+            background: rgba(15, 23, 42, 0.72);
+            border: 1px solid rgba(96, 165, 250, 0.75);
+            border-radius: 999px;
+            padding: 4px 12px;
+            letter-spacing: 1px;
+            z-index: 8;
+        }
+
+        /* ================= 右侧面板 ================= */
+
+        .right-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .metric-card {
+            background: rgba(2, 6, 23, 0.6);
+            border: 1px solid rgba(51, 65, 85, 0.9);
+            border-radius: 14px;
+            padding: 12px;
+        }
+
+        .metric-label {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .metric-value {
+            color: #f8fafc;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .metric-value.green { color: #22c55e; }
+        .metric-value.red { color: #ef4444; }
+        .metric-value.blue { color: #60a5fa; }
+        .metric-value.yellow { color: #facc15; }
+
+        .packet-list {
+            height: 170px;
+            overflow: hidden;
+            background: rgba(2, 6, 23, 0.65);
+            border: 1px solid rgba(51, 65, 85, 0.8);
+            border-radius: 12px;
+            padding: 10px;
+            font-size: 12px;
+            color: #cbd5e1;
+        }
+
+        .packet-line {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            border-bottom: 1px dashed rgba(51, 65, 85, 0.7);
+            padding: 4px 0;
+        }
+
+        .packet-line.attack {
+            color: #fca5a5;
+        }
+
+        .packet-line.offline {
+            color: #facc15;
+        }
+
+        .weather-main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .weather-box {
+            background: rgba(2, 6, 23, 0.6);
+            border: 1px solid rgba(51, 65, 85, 0.9);
+            border-radius: 14px;
+            padding: 12px;
+        }
+
+        .weather-icon {
+            font-size: 34px;
+        }
+
+        .attack-zone {
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            background:
+                linear-gradient(135deg, rgba(127, 29, 29, 0.42), rgba(15, 23, 42, 0.86));
+        }
+
+        .file-input {
+            width: 100%;
+            margin: 8px 0 12px;
+            color: #cbd5e1;
+        }
+
+        pre {
+            margin: 0;
+            background: rgba(2, 6, 23, 0.72);
+            color: #d1d5db;
+            padding: 12px;
+            border-radius: 12px;
+            overflow-x: auto;
+            max-height: 260px;
+            font-size: 12px;
+        }
+
+        .status-line {
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .status-ok { color: #22c55e; }
+        .status-bad { color: #ef4444; }
+        .status-warn { color: #facc15; }
+
+        canvas {
+            width: 100%;
+            height: 110px;
+            background: rgba(2, 6, 23, 0.65);
+            border: 1px solid rgba(51, 65, 85, 0.8);
+            border-radius: 12px;
+        }
+
+        @media (max-width: 1100px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .video-wrapper {
+                min-height: 420px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .ego-vehicle {
+                width: 86%;
+                min-width: 280px;
+                bottom: -62px;
+            }
+
+            .vehicle-overlay {
+                height: 54%;
+            }
+
+            .metric-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .weather-main {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <div class="title-block">
+            <h1>车载以太网视频安全监控平台</h1>
+            <div class="subtitle">Edge Upload · Cloud Receiver · MJPEG Preview · Frame Injection Simulation · Packet Telemetry</div>
+        </div>
+        <div class="system-badge" id="systemBadge">CLOUD READY</div>
+    </div>
+
+    <div class="grid">
+        <div>
+            <div class="panel">
+                <div class="panel-title">
+                    云端显示控制台
+                    <span>CLOUD DISPLAY CONTROL</span>
+                </div>
+
+                <div class="buttons">
+                    <button class="btn-start" onclick="startStream()">打开云端视频显示</button>
+                    <button class="btn-stop" onclick="stopStream()">关闭前端显示</button>
+                    <button class="btn-status" onclick="getStatus()">查看云端状态</button>
+                    <button class="btn-refresh" onclick="refreshVideo()">刷新画面</button>
+                    <button class="btn-car" onclick="toggleVirtualCar()">显示/隐藏虚拟车</button>
+                </div>
+
+                <div class="status-line" id="statusText">
+                    状态：等待边缘端上传。请先运行 edge_sender.py
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">
+                    云端实时视频监控
+                    <span>CLOUD LIVE VEHICLE CAMERA</span>
+                </div>
+
+                <div class="video-wrapper">
+                    <img id="video" alt="云端实时视频流">
+
+                    <div class="monitor-badge" id="monitorBadge">
+                        CLOUD VIDEO · LIVE
+                    </div>
+
+                    <div class="edge-badge" id="edgeBadge">
+                        EDGE: --
+                    </div>
+
+                    <div class="attack-alert" id="attackAlert">
+                        CLOUD FRAME INJECTION
+                    </div>
+
+                    <div class="vehicle-overlay show" id="vehicleOverlay">
+                        <div class="road-guide"></div>
+                        <div class="lane-line lane-left"></div>
+                        <div class="lane-line lane-right"></div>
+                        <div class="center-guide"></div>
+
+                        <div class="ego-vehicle">
+                            <div class="car-shadow"></div>
+                            <div class="hood">
+                                <div class="windshield"></div>
+                                <div class="head-light left"></div>
+                                <div class="head-light right"></div>
+                                <div class="bumper"></div>
+                                <div class="grille"></div>
+                            </div>
+                        </div>
+
+                        <div class="hud-label">EGO VEHICLE · CLOUD DISPLAY</div>
+                    </div>
+
+                    <div class="placeholder" id="placeholder">
+                        云端视频未打开<br>
+                        请先启动 cloud_main.py 和 edge_sender.py
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-stack">
+
+            <div class="panel attack-zone">
+                <div class="panel-title">
+                    云端攻击仿真
+                    <span>CLOUD FRAME INJECTION LAB</span>
+                </div>
+
+                <input class="file-input" type="file" id="attackFile" accept="image/*">
+
+                <div class="buttons">
+                    <button class="btn-attack" onclick="uploadAttackFrame()">上传攻击帧</button>
+                    <button class="btn-attack" onclick="triggerAttack(1)">云端插入 1 帧</button>
+                    <button class="btn-attack" onclick="triggerAttack(5)">云端连续插入 5 帧</button>
+                    <button class="btn-clear" onclick="clearAttack()">清除攻击帧</button>
+                </div>
+
+                <div class="status-line" id="attackStatus">
+                    攻击状态：未触发。当前为云端输出层仿真，不修改真实边缘端视频源。
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">
+                    云端接收指标
+                    <span>EDGE → CLOUD TELEMETRY</span>
+                </div>
+
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">边缘端状态</div>
+                        <div class="metric-value yellow" id="mConnected">WAIT</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">Edge ID</div>
+                        <div class="metric-value blue" id="mEdgeId">--</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">云端接收帧数</div>
+                        <div class="metric-value blue" id="mFrames">0</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">接收 FPS</div>
+                        <div class="metric-value yellow" id="mFps">0</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">接收码率 kbps</div>
+                        <div class="metric-value blue" id="mBitrate">0</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">最近 JPEG 字节</div>
+                        <div class="metric-value" id="mJpegSize">0</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">攻击帧次数</div>
+                        <div class="metric-value red" id="mAttackCount">0</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">最近帧延迟</div>
+                        <div class="metric-value yellow" id="mFrameAge">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">
+                    报文传输变化
+                    <span>EDGE FRAME EVENTS</span>
+                </div>
+
+                <div class="packet-list" id="packetList"></div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">
+                    云端接收码率趋势
+                    <span>RX BITRATE TREND</span>
+                </div>
+
+                <canvas id="trendCanvas" width="420" height="120"></canvas>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">
+                    天气与环境
+                    <span>ENVIRONMENT STATUS</span>
+                </div>
+
+                <div class="weather-main">
+                    <div class="weather-box">
+                        <div class="weather-icon" id="weatherIcon">🌤️</div>
+                        <div class="metric-label">天气</div>
+                        <div class="metric-value" id="weatherText">多云</div>
+                    </div>
+
+                    <div class="weather-box">
+                        <div class="metric-label">温度</div>
+                        <div class="metric-value yellow" id="weatherTemp">26°C</div>
+                    </div>
+
+                    <div class="weather-box">
+                        <div class="metric-label">能见度</div>
+                        <div class="metric-value blue" id="weatherVisibility">8.5 km</div>
+                    </div>
+
+                    <div class="weather-box">
+                        <div class="metric-label">风险等级</div>
+                        <div class="metric-value green" id="weatherRisk">LOW</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">
+                    云端原始状态
+                    <span>RAW JSON</span>
+                </div>
+
+                <pre id="statusJson">{}</pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /*
+     * 前端只连接云端。
+     *
+     * 本机测试：
+     * const BACKEND_URL = "http://127.0.0.1:8000";
+     *
+     * 局域网云端：
+     * const BACKEND_URL = "http://192.168.1.100:8000";
+     *
+     * 公网云服务器：
+     * const BACKEND_URL = "http://你的云服务器公网IP:8000";
+     */
+    const BACKEND_URL = "http://127.0.0.1:8000";
+
+    const video = document.getElementById("video");
+    const placeholder = document.getElementById("placeholder");
+    const statusText = document.getElementById("statusText");
+    const statusJson = document.getElementById("statusJson");
+
+    const vehicleOverlay = document.getElementById("vehicleOverlay");
+    const monitorBadge = document.getElementById("monitorBadge");
+    const edgeBadge = document.getElementById("edgeBadge");
+    const attackAlert = document.getElementById("attackAlert");
+    const attackStatus = document.getElementById("attackStatus");
+    const systemBadge = document.getElementById("systemBadge");
+
+    const packetList = document.getElementById("packetList");
+
+    let virtualCarVisible = true;
+    let bitrateHistory = [];
+    let lastAttackCount = 0;
+    let lastRxFrameCount = 0;
+
+    /*
+     * 分离架构下：
+     * 打开视频流 = 前端开始显示云端 /video_feed
+     * 不再调用 /api/stream/start
+     * 因为摄像头采集由边缘端 edge_sender.py 负责
+     */
+    async function startStream() {
+        video.src = `${BACKEND_URL}/video_feed?t=${Date.now()}`;
+        video.style.display = "block";
+        placeholder.style.display = "none";
+
+        if (virtualCarVisible) {
+            vehicleOverlay.classList.add("show");
+        }
+
+        monitorBadge.classList.add("show");
+        edgeBadge.classList.add("show");
+        systemBadge.innerText = "CLOUD DISPLAY ACTIVE";
+        systemBadge.className = "system-badge";
+
+        await getStatus();
+    }
+
+    /*
+     * 关闭前端显示：
+     * 只关闭浏览器显示，不会停止边缘端上传。
+     * 如果要停止上传，请关闭 edge_sender.py 进程。
+     */
+    async function stopStream() {
+        video.src = "";
+        video.style.display = "none";
+        placeholder.style.display = "block";
+        placeholder.innerHTML = "前端显示已关闭<br>边缘端可能仍在向云端上传";
+
+        vehicleOverlay.classList.remove("show");
+        monitorBadge.classList.remove("show");
+        edgeBadge.classList.remove("show");
+        attackAlert.classList.remove("show");
+
+        systemBadge.innerText = "DISPLAY STOPPED";
+        systemBadge.className = "system-badge warning";
+
+        await getStatus();
+    }
+
+    async function getStatus() {
+        try {
+            const resp = await fetch(`${BACKEND_URL}/api/stream/status`);
+            const data = await resp.json();
+
+            statusJson.innerText = JSON.stringify(data, null, 4);
+
+            updateConnectionText(data);
+
+        } catch (err) {
+            statusText.innerHTML = `状态：<span class="status-bad">云端状态查询失败</span>`;
+            statusJson.innerText = String(err);
+
+            systemBadge.innerText = "CLOUD ERROR";
+            systemBadge.className = "system-badge danger";
+        }
+    }
+
+    function updateConnectionText(data) {
+        const edgeId = data.edge_id || "--";
+        const age = data.last_frame_age_sec;
+
+        edgeBadge.innerText = `EDGE: ${edgeId}`;
+
+        if (data.edge_online) {
+            statusText.innerHTML =
+                `状态：<span class="status-ok">云端已接收边缘端视频</span>` +
+                `，Edge：${edgeId}，接收帧数：${data.rx_frame_count}`;
+
+            systemBadge.innerText = "EDGE ONLINE";
+            systemBadge.className = "system-badge";
+        } else {
+            statusText.innerHTML =
+                `状态：<span class="status-warn">等待边缘端上传</span>` +
+                `，请确认 edge_sender.py 是否运行`;
+
+            systemBadge.innerText = "WAITING EDGE";
+            systemBadge.className = "system-badge warning";
+        }
+
+        if (age !== null && age !== undefined && age > 5) {
+            statusText.innerHTML += `，最近帧延迟：${age}s`;
+        }
+    }
+
+    function refreshVideo() {
+        if (video.style.display === "block") {
+            video.src = `${BACKEND_URL}/video_feed?t=${Date.now()}`;
+        }
+    }
+
+    function toggleVirtualCar() {
+        virtualCarVisible = !virtualCarVisible;
+
+        if (virtualCarVisible && video.style.display === "block") {
+            vehicleOverlay.classList.add("show");
+        } else {
+            vehicleOverlay.classList.remove("show");
+        }
+    }
+
+    async function uploadAttackFrame() {
+        const fileInput = document.getElementById("attackFile");
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert("请先选择一张图片作为攻击帧");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const resp = await fetch(`${BACKEND_URL}/api/attack/upload-frame`, {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await resp.json();
+
+            if (!data.success) {
+                attackStatus.innerText = "攻击帧上传失败：" + data.message;
+                return;
+            }
+
+            attackStatus.innerText = "云端攻击帧上传成功：" + file.name;
+
+        } catch (err) {
+            attackStatus.innerText = "攻击帧上传异常：" + err;
+        }
+    }
+
+    async function triggerAttack(frames) {
+        try {
+            const resp = await fetch(`${BACKEND_URL}/api/attack/insert-frame?frames=${frames}`, {
+                method: "POST"
+            });
+
+            const data = await resp.json();
+            attackStatus.innerText = data.message || "云端攻击帧插入已触发";
+
+            attackAlert.classList.add("show");
+            systemBadge.innerText = "CLOUD ATTACK SIMULATION";
+            systemBadge.className = "system-badge danger";
+
+            setTimeout(() => {
+                attackAlert.classList.remove("show");
+                systemBadge.innerText = "EDGE ONLINE";
+                systemBadge.className = "system-badge";
+            }, 2500);
+
+        } catch (err) {
+            attackStatus.innerText = "攻击触发失败：" + err;
+        }
+    }
+
+    async function clearAttack() {
+        try {
+            const resp = await fetch(`${BACKEND_URL}/api/attack/clear`, {
+                method: "POST"
+            });
+
+            const data = await resp.json();
+            attackStatus.innerText = data.message || "云端攻击帧已清除";
+
+        } catch (err) {
+            attackStatus.innerText = "清除失败：" + err;
+        }
+    }
+
+    async function updateMetrics() {
+        try {
+            const resp = await fetch(`${BACKEND_URL}/api/metrics`);
+            const data = await resp.json();
+
+            document.getElementById("mConnected").innerText = data.edge_online ? "ONLINE" : "OFFLINE";
+            document.getElementById("mConnected").className = data.edge_online ? "metric-value green" : "metric-value red";
+
+            document.getElementById("mEdgeId").innerText = data.edge_id || "--";
+            document.getElementById("mFrames").innerText = data.rx_frame_count || 0;
+            document.getElementById("mFps").innerText = data.avg_rx_fps || 0;
+            document.getElementById("mBitrate").innerText = data.avg_rx_bitrate_kbps || 0;
+            document.getElementById("mJpegSize").innerText = data.last_jpeg_size || 0;
+            document.getElementById("mAttackCount").innerText = data.attack_total_count || 0;
+            document.getElementById("mFrameAge").innerText =
+                data.last_frame_age_sec === null || data.last_frame_age_sec === undefined
+                    ? "--"
+                    : `${data.last_frame_age_sec}s`;
+
+            addPacketEvent(data);
+            updateTrend(data.avg_rx_bitrate_kbps || 0);
+
+            if ((data.attack_total_count || 0) > lastAttackCount) {
+                attackAlert.classList.add("show");
+                setTimeout(() => attackAlert.classList.remove("show"), 1800);
+                lastAttackCount = data.attack_total_count || 0;
+            }
+
+            lastRxFrameCount = data.rx_frame_count || 0;
+
+        } catch (err) {
+            console.log("metrics error", err);
+
+            systemBadge.innerText = "CLOUD API ERROR";
+            systemBadge.className = "system-badge danger";
+        }
+    }
+
+    function addPacketEvent(data) {
+        const now = new Date().toLocaleTimeString();
+        const line = document.createElement("div");
+
+        const currentFrames = data.rx_frame_count || 0;
+        const newFrameArrived = currentFrames > lastRxFrameCount;
+        const isAttack = (data.attack_remaining_frames || 0) > 0 || (data.attack_total_count || 0) > lastAttackCount;
+
+        if (!data.edge_online) {
+            line.className = "packet-line offline";
+            line.innerHTML = `
+                <span>${now}</span>
+                <span>EDGE_OFFLINE</span>
+                <span>NO FRAME</span>
+                <span>0 kbps</span>
+            `;
+        } else if (isAttack) {
+            line.className = "packet-line attack";
+            line.innerHTML = `
+                <span>${now}</span>
+                <span>CLOUD_INJECT</span>
+                <span>${data.last_jpeg_size || 0} B</span>
+                <span>${data.avg_rx_bitrate_kbps || 0} kbps</span>
+            `;
+        } else if (newFrameArrived) {
+            line.className = "packet-line";
+            line.innerHTML = `
+                <span>${now}</span>
+                <span>EDGE_FRAME</span>
+                <span>${data.last_jpeg_size || 0} B</span>
+                <span>${data.avg_rx_bitrate_kbps || 0} kbps</span>
+            `;
+        } else {
+            line.className = "packet-line offline";
+            line.innerHTML = `
+                <span>${now}</span>
+                <span>NO_NEW_FRAME</span>
+                <span>${data.last_jpeg_size || 0} B</span>
+                <span>${data.avg_rx_bitrate_kbps || 0} kbps</span>
+            `;
+        }
+
+        packetList.prepend(line);
+
+        while (packetList.children.length > 12) {
+            packetList.removeChild(packetList.lastChild);
+        }
+    }
+
+    function updateTrend(value) {
+        bitrateHistory.push(value);
+
+        if (bitrateHistory.length > 40) {
+            bitrateHistory.shift();
+        }
+
+        drawTrend();
+    }
+
+    function drawTrend() {
+        const canvas = document.getElementById("trendCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const w = canvas.width;
+        const h = canvas.height;
+
+        ctx.clearRect(0, 0, w, h);
+
+        ctx.strokeStyle = "rgba(51, 65, 85, 0.8)";
+        ctx.lineWidth = 1;
+
+        for (let i = 0; i < 5; i++) {
+            const y = i * h / 4;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(w, y);
+            ctx.stroke();
+        }
+
+        if (bitrateHistory.length < 2) {
+            ctx.fillStyle = "#93c5fd";
+            ctx.font = "12px Consolas";
+            ctx.fillText("RX Bitrate kbps", 10, 18);
+            return;
+        }
+
+        const maxVal = Math.max(...bitrateHistory, 1);
+
+        ctx.strokeStyle = "#60a5fa";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+
+        bitrateHistory.forEach((v, i) => {
+            const x = i * w / (bitrateHistory.length - 1);
+            const y = h - (v / maxVal) * (h - 12) - 6;
+
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        });
+
+        ctx.stroke();
+
+        ctx.fillStyle = "#93c5fd";
+        ctx.font = "12px Consolas";
+        ctx.fillText("RX Bitrate kbps", 10, 18);
+    }
+
+    function updateWeatherSimulation() {
+        const states = [
+            { icon: "☀️", text: "晴", temp: "28°C", visibility: "10.0 km", risk: "LOW", cls: "metric-value green" },
+            { icon: "🌤️", text: "多云", temp: "26°C", visibility: "8.5 km", risk: "LOW", cls: "metric-value green" },
+            { icon: "🌧️", text: "小雨", temp: "23°C", visibility: "5.0 km", risk: "MED", cls: "metric-value yellow" },
+            { icon: "🌫️", text: "雾", temp: "22°C", visibility: "1.8 km", risk: "HIGH", cls: "metric-value red" }
+        ];
+
+        const idx = Math.floor(Date.now() / 15000) % states.length;
+        const s = states[idx];
+
+        document.getElementById("weatherIcon").innerText = s.icon;
+        document.getElementById("weatherText").innerText = s.text;
+        document.getElementById("weatherTemp").innerText = s.temp;
+        document.getElementById("weatherVisibility").innerText = s.visibility;
+
+        const risk = document.getElementById("weatherRisk");
+        risk.innerText = s.risk;
+        risk.className = s.cls;
+    }
+
+    setInterval(getStatus, 3000);
+    setInterval(updateMetrics, 1000);
+    setInterval(updateWeatherSimulation, 3000);
+
+    updateWeatherSimulation();
+    drawTrend();
+    getStatus();
+    updateMetrics();
+</script>
+</body>
+</html>
